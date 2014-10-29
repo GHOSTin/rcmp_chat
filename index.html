@@ -1,0 +1,72 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Tornado Chat</title>
+        <link rel="stylesheet" href="static/lib/bootstrap/css/bootstrap.min.css">
+        <link rel="stylesheet" href="static/css/style.css">
+
+        <script src="static/js/jquery-2.1.1.min.js"></script>
+        <script src="static/js/underscore-min.js"></script>
+        <script src="static/js/backbone.js"></script>
+        <script src="static/lib/bootstrap/js/bootstrap.min.js"></script>
+        <script src="static/lib/autosize-master/jquery.autosize.min.js"></script>
+        <script src="static/lib/moment/moment.js"></script>
+        <script src="static/lib/sockjs/sockjs.min.js"></script>
+        <script src="static/js/main.js"></script>
+        <script>
+            var preloadMessages = {% raw messages %};
+        </script>
+    </head>
+    <body>
+        <div id="backbone-chat" class="wrapper">
+            <article class="main">
+                <div class="chat-header chat-pad">
+                    <span class="chat-name-string">Уютный чат Канадского Лося и ко с блекджеком и ..</span>
+                    <div class="fade-cover"></div>
+                </div>
+                <div id="chat-messages" class="chat-messages chat-pad">
+                    <ul class="list-unstyled scrolled"></ul>
+                </div>
+                <form name="chat-form form-inline" class="chat-pad" id="chat-form" action="." method="post">
+                    <div class="input-prepend input-append">
+                        <div class="add-on">
+                            <i class="icon-envelope"></i>
+                        </div>
+                        <textarea rows="1" spellcheck="true" class="room-textarea scrolled form-control"
+                                  style="overflow: hidden; word-wrap: break-word; resize: none; height: 34px; max-height: 427px;"></textarea>
+                    </div>
+                </form>
+            </article>
+            <aside class="aside aside-2">
+                <div class="roster-header clearfix">
+                    <div style="position: relative" class="roster-title-con roster-marg">
+                        <div style="padding: 0; position: relative" class="container-fluid clearfix">
+                            <div style="position: relative" class="toolbar-3-opp">
+                                <h4 class="roster-title">
+                                    <span class="roster-my-name semi-bold" title="GHOSTin">GHOSTin</span>
+                                    <div class="fade-to-gray2"></div>
+                                </h4>
+                            </div>
+                        </div>
+                        <div style="padding: 0; height: 24px;" class="container-fluid">
+                            <div class="row-fluid clearfix">
+                                <div style="overflow: hidden; white-space: nowrap;" class="fade-con">
+                                    <span class="roster-my-email" title="lwhiteghostl@gmail.com">lwhiteghostl@gmail.com</span>
+                                    <div class="fade-to-gray2"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+        </div>
+        <!-- Templates -->
+        <script type="text/template" id="message-template">
+            <strong><%- user %></strong>
+            <span style="width: 100%"> <%= text.replace(new RegExp('\r?\n', 'g'), '<br />') %></span>
+            <small class="chat-msg-time pull-right" style="vertical-align: text-top"><%= moment(time).format('HH:mm') %></small>
+        </script>
+        <!-- /Templates -->
+    </body>
+</html>

@@ -1,0 +1,178 @@
+@import url("https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,700,400italic,700italic");
+html, body {
+    height: 100%;
+}
+body {
+    font-family: "Source Sans Pro","Helvetica Neue",Tahoma,Arial,sans-serif;
+    font-size: 15px;
+    line-height: 1.42857143;
+    color: #333;
+    background-color: #fff;
+}
+input[type="text"] {
+    outline: none;
+}
+.wrapper {
+  display: -webkit-box;
+  display: -moz-box;
+  display: -ms-flexbox;
+  display: -webkit-flex;
+  display: flex;
+
+  -webkit-flex-flow: row wrap;
+  flex-flow: row wrap;
+
+  height: 100%;
+}
+
+.wrapper > * {
+  flex: 1 100%;
+}
+
+.main {
+  height: 100%;
+  display: flex;
+  flex-flow: row wrap;
+}
+.chat-pad,
+.roster-marg{
+    padding-right:12px;
+    padding-left: 12px;
+}
+.toolbar-3-opp {
+    width: calc(100% - 3px);
+    width: -webkit-calc(100% - 3px);
+    width: -moz-calc(100% - 3px);
+    padding-right: 2px;
+}
+.chat-header {
+    align-self: flex-start;
+    flex: 1 1 100%;
+    background-color: #fcfcfc;
+    border-bottom: 1px solid #f0f0f0;
+    height: 50px;
+    line-height: 50px;
+    position: relative;
+}
+.chat-name-string {
+    display: inline-block;
+    overflow: hidden;
+    height: 100%;
+    line-height: 50px;
+    width: 100%;
+}
+.chat-header .fade-cover {
+    width: 50px;
+    height: 49px;
+    position: absolute;
+    right: 12px;
+    top: 0;
+    background: -moz-linear-gradient(left,rgba(252,252,252,0) 0,#fcfcfc 100%);
+    background: -webkit-gradient(linear,left top,right top,color-stop(0%,rgba(252,252,252,0)),color-stop(100%,#fcfcfc));
+    background: -webkit-linear-gradient(left,rgba(252,252,252,0) 0,#fcfcfc 100%);
+    background: -o-linear-gradient(left,rgba(252,252,252,0) 0,#fcfcfc 100%);
+    background: -ms-linear-gradient(left,rgba(252,252,252,0) 0,#fcfcfc 100%);
+    background: linear-gradient(to right,rgba(252,252,252,0) 0,#fcfcfc 100%);
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#00fcfcfc', endColorstr='#fcfcfc', GradientType=1);
+}
+.chat-messages{
+   align-self: stretch;
+   flex: 1 1 100%;
+   height: 100%;
+   margin-top: -60px;
+   padding-top: 70px;
+   margin-bottom: -50px;
+   padding-bottom: 60px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+}
+.scrolled::-webkit-scrollbar {
+    -webkit-appearance: none;
+}
+.scrolled::-webkit-scrollbar-thumb {
+    border-radius: 8px;
+    border: 5px solid #fff;
+    background-color: #ccc;
+}
+.chat-messages > ul {
+    overflow-y: auto;
+}
+li.message  {
+    display: table;
+    max-width: 99.9%;
+    margin-top: 6px;
+    margin-right: -1px;
+    border-left: 5px solid transparent;
+    word-wrap: break-word;
+    position: relative;
+    -webkit-transition: background-color 1s ease,border-color 1s ease;
+    -moz-transition: background-color 1s ease,border-color 1s ease;
+    -o-transition: background-color 1s ease,border-color 1s ease;
+    transition: background-color 1s ease,border-color 1s ease;
+}
+li.message > * {
+    display: table-cell;
+}
+.chat-msg-time {
+    padding-right: 5px;
+}
+#chat-form{
+    align-self: flex-end;
+    flex: 1 1 100%;
+}
+.roster-header {
+    background: #ececec;
+    border-bottom: 1px solid #e6e6e6;
+}
+.roster-my-email {
+    display: inline-block;
+    font-size: 14px;
+    overflow: hidden;
+    white-space: nowrap;
+    color: #bbb;
+}
+.fade-to-gray2 {
+    width: 10px;
+    height: 100%;
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    background: -moz-linear-gradient(left,rgba(236,236,236,0) 0,#ececec 100%);
+    background: -webkit-gradient(linear,left top,right top,color-stop(0%,rgba(236,236,236,0)),color-stop(100%,#ececec));
+    background: -webkit-linear-gradient(left,rgba(236,236,236,0) 0,#ececec 100%);
+    background: -o-linear-gradient(left,rgba(236,236,236,0) 0,#ececec 100%);
+    background: -ms-linear-gradient(left,rgba(236,236,236,0) 0,#ececec 100%);
+    background: linear-gradient(to right,rgba(236,236,236,0) 0,#ececec 100%);
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#00ececec', endColorstr='#ececec', GradientType=1);
+}
+.form-control {
+    border-radius: 0;
+    border: 2px solid #dedede;
+    -webkit-box-shadow: none!important;
+    -moz-box-shadow: none!important;
+    box-shadow: none!important;
+    margin: 10px auto!important;
+}
+.aside {
+    border-left: 1px solid rgb(230, 230, 230);
+}
+
+@media all and (min-width: 600px) {
+  .aside { flex: 1 auto; }
+}
+
+@media all and (min-width: 800px) {
+  .main    { flex: 4 300px; }
+  .main    { order: 1; }
+  .aside-2 { order: 2; }
+}
+.input-large {
+    width: 450px;
+}
+.chat-messages strong:after {
+    content: ': ';
+    font-weight: normal;
+    color: #bbb;
+}
