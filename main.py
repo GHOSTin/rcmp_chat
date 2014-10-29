@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-#!-*- coding: utf-8 -*-
 
 import json
 
@@ -12,7 +11,7 @@ import pymongo
 
 class MainHandler(tornado.web.RequestHandler):
     def get(self, *args, **kwargs):
-        messages = sorted(list(db.chat.find().sort("$natural", -1).limit(20)), key=lambda message: message['time'])
+        messages = sorted(list(db.chat.find().sort("$natural", -1).limit(25)), key=lambda message: message['time'])
         for message in messages:
             message['id'] = str(message["_id"])
             del message["_id"]
