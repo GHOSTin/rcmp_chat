@@ -1,0 +1,15 @@
+{
+  "name": "RCMP Chat",
+  "version": "2.0.0",
+  "authors": [
+    "GHOST home <lwhiteghostl@gmail.com>"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "backbone": "~1.1.2",
+    "bootstrap": "~3.3.0",
+    "jquery-autosize": "~1.18.13",
+    "moment": "~2.8.3",
+    "sockjs": "~0.3.4"
+  }
+}

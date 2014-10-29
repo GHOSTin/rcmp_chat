@@ -16,7 +16,7 @@ $(function () {
 
             ws.onmessage = function (e) {
                 var message = new Message(JSON.parse(e.data));
-                App.addOne(message);
+                Messages.add(message);
             };
             this.ws = ws;
         }
@@ -40,8 +40,7 @@ $(function () {
 
     var MessageList = Backbone.Collection.extend({
 
-        model: Message,
-        url: 'http://' + window.location.hostname + ':3000/'
+        model: Message
 
     });
 
@@ -114,7 +113,7 @@ $(function () {
                 return false;
             }
 
-            socket.send(JSON.stringify({
+           socket.send(JSON.stringify({
                 user: 'testUser',
                 text: _.escape(this.textInput.val()),
                 time: Date.now()
@@ -161,12 +160,9 @@ $(function () {
 
     });
 
-
     Backbone.sync = function(method, model) {
         console.log(method + ': ' + JSON.stringify(model));
     };
-
-
 
     var App = new AppView;
 
