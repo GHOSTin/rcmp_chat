@@ -16,6 +16,7 @@ $(function () {
 
             ws.onmessage = function (e) {
                 var message = new Message(JSON.parse(e.data));
+                message.id = message.get('_id').$oid;
                 Messages.add(message);
             };
             this.ws = ws;
@@ -60,6 +61,7 @@ $(function () {
 
         render: function () {
             this.$el.html(this.template(this.model.toJSON()));
+            this.$el.attr('data-id', this.model.id);
             return this;
         }
     });
