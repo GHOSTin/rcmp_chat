@@ -10,6 +10,7 @@
     "bootstrap": "~3.3.0",
     "jquery-autosize": "~1.18.13",
     "moment": "~2.8.3",
-    "sockjs": "~0.3.4"
+    "sockjs": "~0.3.4",
+    "fontawesome": "~4.2.0"
   }
 }

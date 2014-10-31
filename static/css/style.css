@@ -95,7 +95,7 @@ input[type="text"] {
     border: 5px solid #fff;
     background-color: #ccc;
 }
-.chat-messages > ul {
+.chat-messages > ul, .scrolled {
     overflow-y: auto;
 }
 li.message  {
@@ -124,6 +124,13 @@ li.message > * {
 .roster-header {
     background: #ececec;
     border-bottom: 1px solid #e6e6e6;
+}
+.roster .scrolled .roster-part {
+    margin: 8px 0 4px 8px;
+}
+.roster-item {
+    padding: 3px 0 5px 4px;
+    border-right: 4px solid transparent;
 }
 .roster-my-email {
     display: inline-block;

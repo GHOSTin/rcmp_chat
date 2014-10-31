@@ -1,6 +1,9 @@
 $(function () {
 
     var AppView;
+    var colors = ["rgb(102, 102, 102)", "rgb(204, 198, 21)", "rgb(204, 20, 137)", "rgb(21, 204, 198)",
+        "rgb(21, 204, 106)", "rgb(204, 30, 20)", "rgb(20, 147, 201)", "rgb(206, 107, 22)",
+        "rgb(239, 161, 0)", "rgb(131, 217, 2)", "rgb(21, 69, 204)", "rgb(91, 20, 204)", "rgb(158, 20, 204)"];
     var Socket = {
         ws: null,
         init: function () {
@@ -15,9 +18,25 @@ $(function () {
             };
 
             ws.onmessage = function (e) {
-                var message = new Message(JSON.parse(e.data));
-                message.id = message.get('_id').$oid;
-                Messages.add(message);
+                var msg = e.data;
+                switch(msg.type){
+                    case 1:
+                        var message = new Message(JSON.parse(msg.data));
+                        Messages.add(message);
+                        break;
+                    case 2:
+                        var me = _.findWhere(msg.data.list, {id: msg.data.id});
+                        if(! _.isUndefined(me)){
+                            MyUser.set(me);
+                            Users.add(MyUser);
+                        }
+                        break;
+                    case 3:
+                        var newUser = new User(msg.data);
+                        OnlineUsers.add(newUser);
+                        Users.add(newUser);
+                        break;
+                }
             };
             this.ws = ws;
         }
@@ -27,9 +46,10 @@ $(function () {
     var socket = Socket.ws;
 
     var Message = Backbone.Model.extend({
+        idAttribute: "_id",
         defaults: function () {
             return {
-                user: 'testUser',
+                user: MyUser,
                 text: null,
                 time: Date.now()
             };
@@ -61,7 +81,53 @@ $(function () {
 
         render: function () {
             this.$el.html(this.template(this.model.toJSON()));
+            var modelUser = this.model.toJSON().user;
+            if(!_.isEqual(modelUser, 'testUser')) {
+                console.log(modelUser)
+                this.$el.find('strong').css('color', modelUser.get('color')).text(modelUser.get('nickname'));
+            }
             this.$el.attr('data-id', this.model.id);
+            return this;
+        }
+    });
+
+    var User = Backbone.Model.extend({
+       defaults: function(){
+           return {
+               id: null,
+               nickname: null,
+               email: null,
+               color: colors[_.random(colors.length)]
+           }
+       }
+
+    });
+
+    var UserList = Backbone.Collection.extend({
+        model: User
+    });
+
+    var MyUser = new User();
+
+    var OnlineUsers = new UserList;
+
+    var Users = new UserList;
+
+    var RosterView = Backbone.View.extend({
+
+        tagName: 'li',
+
+        className: 'roster-item',
+
+        template: _.template($('#roster-template').html()),
+
+        initialize: function () {
+            this.listenTo(this.model, 'change', this.render);
+            this.listenTo(this.model, 'destroy', this.remove);
+        },
+
+        render: function () {
+            this.$el.html(this.template(this.model.toJSON()));
             return this;
         }
     });
@@ -89,9 +155,27 @@ $(function () {
 
             this.listenTo(Messages, 'add', this.addOne);
             this.listenTo(Messages, 'reset', this.addAll);
-            this.listenTo(Messages, 'all', this.render);
+
+            this.listenTo(MyUser, 'all', this.renderRosterHead);
+
+            this.listenTo(OnlineUsers, 'add', this.addUser);
 
             Messages.reset(preloadMessages);
+        },
+
+        addUser: function(user){
+            var view = new RosterView({
+                model: user,
+                id: "roster-item-"+user.id
+            });
+            this.$('.roster-part').append(view.render().el);
+        },
+
+        renderRosterHead: function() {
+            var roster_name = MyUser.get('nickname');
+            var roster_email = MyUser.get('email');
+            $('span.roster-my-name').text(roster_name).attr('title', roster_name);
+            $('span.roster-my-email').text(roster_email).attr('title', roster_email);
         },
 
         addOne: function (message) {
@@ -116,7 +200,7 @@ $(function () {
             }
 
            socket.send(JSON.stringify({
-                user: 'testUser',
+                user: MyUser.toJSON,
                 text: _.escape(this.textInput.val()),
                 time: Date.now()
             }));
