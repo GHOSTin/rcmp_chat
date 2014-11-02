@@ -166,13 +166,34 @@ li.message > * {
     border-left: 1px solid rgb(230, 230, 230);
 }
 
-@media all and (min-width: 600px) {
-  .aside { flex: 1 auto; }
+@media all and (max-width: 768px) {
+  .aside {
+    position: fixed;
+    height: 100%;
+    width: 100%;
+    right: -100%;
+    top: 0;
+    bottom: 0;
+    background: white;
+    display: block;
+    transition: right 0.5s ease-out 0.25s;
+  }
+
+  .swiped {
+      right: -50%;
+  }
+}
+
+@media all and (max-width: 420px){
+  .swiped {
+      right: -15%;
+  }
 }
 
 @media all and (min-width: 800px) {
   .main    { flex: 4 300px; }
   .main    { order: 1; }
+  .aside { flex: 1 auto; }
   .aside-2 { order: 2; }
 }
 .input-large {
