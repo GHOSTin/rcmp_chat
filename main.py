@@ -9,7 +9,6 @@ import tornado.escape
 from tornado.httpclient import HTTPClient, HTTPError
 import sockjs.tornado
 
-from bson import json_util
 from bson.objectid import ObjectId
 
 import pymongo
@@ -99,7 +98,7 @@ if __name__ == '__main__':
 
     http_client = tornado.httpclient.HTTPClient()
     try:
-        response = http_client.fetch("http://rcmp.local:8888")
+        response = http_client.fetch("http://rcmp.me/api/a7bdda50b1292bddfdee31f4a0d904b9db8a13e4/get_user_list/")
         allUsers += tornado.escape.json_decode(response.body)
     except tornado.httpclient.HTTPError as e:
         print("Error: " + str(e))

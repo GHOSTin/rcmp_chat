@@ -61,7 +61,7 @@ $(function () {
                         OnlineUsers.add(newUser);
                         break;
                     case 4:
-                        (!_.isUndefined(msg.data))
+                        if(!_.isUndefined(msg.data))
                             OnlineUsers.get(msg.data).destroy();
                         break;
                     case 401:
