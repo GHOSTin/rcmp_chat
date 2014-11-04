@@ -17,6 +17,7 @@ NEW_MESSAGE = 1
 USERS_LIST = 2
 NEW_USER = 3
 USER_OFFLINE = 4
+LOAD_HISTORY = 101
 ERROR = 500
 AUTH_ERROR = 401
 
@@ -25,10 +26,13 @@ allUsers = list()
 
 class MainHandler(tornado.web.RequestHandler):
     def get(self, *args, **kwargs):
-        messages = sorted(list(db.chat.find().sort("$natural", -1).limit(35)), key=lambda message: message['time'])
+        self.render('index.html', messages=self.load_messages())
+
+    def load_messages(self, offset=0):
+        messages = sorted(list(db.chat.find().sort("$natural", -1).skip(offset).limit(50)), key=lambda message: message['time'])
         for message in messages:
             message['_id'] = str(message["_id"])
-        self.render('index.html', messages=json.dumps(messages))
+        return json.dumps(messages)
 
 
 class WebSocket(sockjs.tornado.SockJSConnection):
@@ -71,12 +75,18 @@ class WebSocket(sockjs.tornado.SockJSConnection):
         self.send(message)
 
     def on_message(self, msg):
-        message_dict = json.loads(msg)
-        db.chat.insert(message_dict)
         message = dict()
-        message['type'] = NEW_MESSAGE
-        message['data'] = json.dumps(message_dict, default=self.default)
-        self.broadcast(self.webSocketsPool, message)
+        msg = tornado.escape.json_decode(msg)
+        if msg['type'] == LOAD_HISTORY:
+            message['type'] = LOAD_HISTORY
+            message['data'] = MainHandler.load_messages(MainHandler, offset=msg['data'])
+            self.send(message)
+        if msg['type'] == NEW_MESSAGE:
+            message_dict = msg['data']
+            db.chat.insert(message_dict)
+            message['type'] = NEW_MESSAGE
+            message['data'] = json.dumps(message_dict, default=self.default)
+            self.broadcast(self.webSocketsPool, message)
 
     def on_close(self):
         if self.uid in self.onlineUsers:

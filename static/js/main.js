@@ -64,6 +64,14 @@ $(function () {
                         if(!_.isUndefined(msg.data))
                             OnlineUsers.get(msg.data).destroy();
                         break;
+                    case 101:
+                        App.lastMessage = $('#chat-messages').find('ul .message').first();
+                        _.each(JSON.parse(msg.data).reverse(), function(elem){
+                            var message = new Message(elem);
+                            Messages.add(message, {at: 0});
+                        });
+                        App.isLoading = false;
+                        break;
                     case 401:
                         $('.room-textarea').prop('readonly', true).attr('placeholder', msg.data).trigger('autosize.resizeIncludeStyle');
                         break;
@@ -86,13 +94,17 @@ $(function () {
             };
         },
         save: function (options) {
-            socket.send(JSON.stringify(this));
+            socket.send(JSON.stringify({type: 1, data: this}));
         }
     });
 
     var MessageList = Backbone.Collection.extend({
 
-        model: Message
+        model: Message,
+
+        comparator: function(model) {
+          return model.get("time");
+        }
 
     });
 
@@ -178,9 +190,6 @@ $(function () {
         },
 
         initialize: function () {
-            if (this.lastMessage.length) {
-                this.lastMessage[this.lastMessage.length].scrollIntoView();
-            }
             this.textInput = this.$('.room-textarea');
             this.textInput.autosize({
                 append: "",
@@ -188,20 +197,32 @@ $(function () {
             });
 
             $(window).on("resize", this.resizeTextareaMaxHeight);
+            $('.infinite-scroll').on('scroll', this.checkScroll);
 
             this.events = _.extend({}, this.defaultEvents, this.events||{});
 
 		    this.userListOpen = false;
+            this.isLoading = false;
+            this.lastMessage = null;
 
             this.listenTo(Messages, 'add', this.addOne);
             this.listenTo(Messages, 'reset', this.addAll);
 
             this.listenTo(MyUser, 'all', this.renderRosterHead);
-
             this.listenTo(OnlineUsers, 'add', this.addUser);
 
             Messages.reset(preloadMessages);
             this.$el.hammer();
+        },
+
+        checkScroll: function() {
+            if($(this).scrollTop() < 120 && !App.isLoading){
+                socket.send(JSON.stringify({
+                   type: 101,
+                   data: Messages.length
+                }));
+                App.isLoading = true;
+            }
         },
 
         swipeUserList: function(e){
@@ -242,8 +263,17 @@ $(function () {
             var view = new MessageView({
                 model: message
             });
-            this.$('#chat-messages ul').append(view.render().el);
-            this.$('.message').last()[0].scrollIntoView();
+            var messageList = this.$('#chat-messages ul');
+            if(Messages.indexOf(message) == 0) {
+                messageList.prepend(view.render().el);
+                if(!_.isNull(this.lastMessage))
+                    this.lastMessage[0].scrollIntoView();
+            }
+            else {
+                messageList.append(view.render().el);
+                if( messageList[0].scrollHeight - messageList.height() - messageList.scrollTop() < 200)
+                    this.$('.message').last()[0].scrollIntoView();
+            }
         },
 
         addAll: function () {
@@ -260,9 +290,12 @@ $(function () {
             }
 
            socket.send(JSON.stringify({
-                user: MyUser,
-                text: _.escape(this.textInput.val()),
-                time: Date.now()
+               type: 1,
+               data: {
+                   user: MyUser,
+                   text: _.escape(this.textInput.val()),
+                   time: Date.now()
+               }
             }));
 
             return false;
