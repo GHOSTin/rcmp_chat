@@ -114,6 +114,11 @@ li.message  {
 li.message > * {
     display: table-cell;
 }
+.emoji {
+    width: 1.2em;
+    height: 1.2em;
+    display: inline-block;
+}
 .chat-msg-time {
     padding-right: 5px;
 }

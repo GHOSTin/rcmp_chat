@@ -274,6 +274,17 @@ $(function () {
                 if( messageList[0].scrollHeight - messageList.height() - messageList.scrollTop() < 200)
                     this.$('.message').last()[0].scrollIntoView();
             }
+            emojify.setConfig({
+                img_dir          : 'static/lib/emojify/images/emoji',
+                ignored_tags     : {                // Ignore the following tags
+                    'SCRIPT'  : 1,
+                    'TEXTAREA': 1,
+                    'A'       : 1,
+                    'PRE'     : 1,
+                    'CODE'    : 1
+                }
+            });
+            emojify.run();
         },
 
         addAll: function () {
