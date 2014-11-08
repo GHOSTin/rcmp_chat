@@ -1,7 +1,31 @@
 $(function () {
 
+    _.mixin({
+      linkify : function(string) {
+        var replacedText, replacePattern1, replacePattern2, replacePattern3;
+
+        //URLs starting with http://, https://, or ftp://
+        replacePattern1 = /(\b(https?|ftp):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/gim;
+        replacedText = string.replace(replacePattern1, '<a href="$1" target="_blank">$1</a>');
+
+        //URLs starting with "www." (without // before it, or it'd re-link the ones done above).
+        replacePattern2 = /(^|[^\/])(www\.[\S]+(\b|$))/gim;
+        replacedText = replacedText.replace(replacePattern2, '$1<a href="http://$2" target="_blank">$2</a>');
+
+        //Change email addresses to mailto:: links.
+        replacePattern3 = /(([a-zA-Z0-9\-\_\.])+@[a-zA-Z\_]+?(\.[a-zA-Z]{2,6})+)/gim;
+        replacedText = replacedText.replace(replacePattern3, '<a href="mailto:$1">$1</a>');
+
+        return replacedText;
+      }
+    });
+
     var AppView;
-    var Socket = {
+    var colors = ["rgb(204, 198, 21)", "rgb(204, 20, 137)", "rgb(21, 204, 198)",
+        "rgb(21, 204, 106)", "rgb(204, 30, 20)", "rgb(20, 147, 201)", "rgb(206, 107, 22)",
+        "rgb(239, 161, 0)", "rgb(131, 217, 2)", "rgb(21, 69, 204)", "rgb(91, 20, 204)", "rgb(158, 20, 204)"];
+    var Socket;
+    Socket = {
         ws: null,
         init: function () {
             ws = new SockJS('http://' + window.location.hostname + ':3000/chat');
@@ -15,9 +39,35 @@ $(function () {
             };
 
             ws.onmessage = function (e) {
-                var message = new Message(JSON.parse(e.data));
-                message.id = message.get('_id').$oid;
-                Messages.add(message);
+                var msg = e.data;
+                switch (msg.type) {
+                    case 1:
+                        var message = new Message(JSON.parse(msg.data));
+                        Messages.add(message);
+                        break;
+                    case 2:
+                        var me = _.findWhere(msg.data.list, {id: msg.data.id});
+                        if (!_.isUndefined(me)) {
+                            MyUser.set(me);
+                            $('.room-textarea').prop('readonly', false).attr('placeholder', "").trigger('autosize.resizeIncludeStyle');
+                        }
+                        var _users = _.reject(msg.data.list, function (num) {
+                            return _.isEqual(num, me)
+                        });
+                        OnlineUsers.add(_users);
+                        break;
+                    case 3:
+                        var newUser = new User(msg.data);
+                        OnlineUsers.add(newUser);
+                        break;
+                    case 4:
+                        if(!_.isUndefined(msg.data))
+                            OnlineUsers.get(msg.data).destroy();
+                        break;
+                    case 401:
+                        $('.room-textarea').prop('readonly', true).attr('placeholder', msg.data).trigger('autosize.resizeIncludeStyle');
+                        break;
+                }
             };
             this.ws = ws;
         }
@@ -27,9 +77,10 @@ $(function () {
     var socket = Socket.ws;
 
     var Message = Backbone.Model.extend({
+        idAttribute: "_id",
         defaults: function () {
             return {
-                user: 'testUser',
+                user: MyUser,
                 text: null,
                 time: Date.now()
             };
@@ -57,11 +108,56 @@ $(function () {
 
         initialize: function () {
             this.model.get('text');
+            this.listenTo(this.model, 'change', this.render);
+            this.listenTo(this.model, 'destroy', this.remove);
         },
 
         render: function () {
             this.$el.html(this.template(this.model.toJSON()));
+            var modelUser = this.model.toJSON().user;
+            if(!_.isEqual(modelUser, 'testUser')) {
+                this.$el.find('strong').text(modelUser.nickname);
+            }
             this.$el.attr('data-id', this.model.id);
+            return this;
+        }
+    });
+
+    var User = Backbone.Model.extend({
+       defaults: function(){
+           return {
+               id: null,
+               nickname: null,
+               email: null,
+               color: colors[_.random(colors.length-1) ]
+           }
+       }
+
+    });
+
+    var UserList = Backbone.Collection.extend({
+        model: User
+    });
+
+    var MyUser = new User();
+
+    var OnlineUsers = new UserList;
+
+    var RosterView = Backbone.View.extend({
+
+        tagName: 'li',
+
+        className: 'roster-item',
+
+        template: _.template($('#roster-template').html()),
+
+        initialize: function () {
+            this.listenTo(this.model, 'change', this.render);
+            this.listenTo(this.model, 'destroy', this.remove);
+        },
+
+        render: function () {
+            this.$el.html(this.template(this.model.toJSON()));
             return this;
         }
     });
@@ -71,8 +167,14 @@ $(function () {
         el: $('#backbone-chat'),
         lastMessage: $('.message').last(),
 
+        defaultEvents: {
+            'swipeleft': 'swipeUserList',
+            'swiperight': 'swipeUserList'
+        },
+
         events: {
-            'keydown .room-textarea': 'keyPressTextarea'
+            'keydown .room-textarea': 'keyPressTextarea',
+            'click .main': 'closeUserList'
         },
 
         initialize: function () {
@@ -87,11 +189,53 @@ $(function () {
 
             $(window).on("resize", this.resizeTextareaMaxHeight);
 
+            this.events = _.extend({}, this.defaultEvents, this.events||{});
+
+		    this.userListOpen = false;
+
             this.listenTo(Messages, 'add', this.addOne);
             this.listenTo(Messages, 'reset', this.addAll);
-            this.listenTo(Messages, 'all', this.render);
+
+            this.listenTo(MyUser, 'all', this.renderRosterHead);
+
+            this.listenTo(OnlineUsers, 'add', this.addUser);
 
             Messages.reset(preloadMessages);
+            this.$el.hammer();
+        },
+
+        swipeUserList: function(e){
+            if(e.type=='swipeleft' && !this.userListOpen){
+                this.openUserList()
+            }
+            if(e.type=='swiperight' && this.userListOpen) {
+                this.closeUserList()
+            }
+        },
+
+        openUserList: function() {
+            $('.roster').addClass('swiped');
+            this.userListOpen = true;
+        },
+
+        closeUserList: function() {
+            $('.roster').removeClass('swiped');
+            this.userListOpen = false;
+        },
+
+        addUser: function(user){
+            var view = new RosterView({
+                model: user,
+                id: "roster-item-"+user.id
+            });
+            this.$('.roster-part').append(view.render().el);
+        },
+
+        renderRosterHead: function() {
+            var roster_name = MyUser.get('nickname');
+            var roster_email = MyUser.get('email');
+            $('span.roster-my-name').text(roster_name).attr('title', roster_name);
+            $('span.roster-my-email').text(roster_email).attr('title', roster_email);
         },
 
         addOne: function (message) {
@@ -116,7 +260,7 @@ $(function () {
             }
 
            socket.send(JSON.stringify({
-                user: 'testUser',
+                user: MyUser,
                 text: _.escape(this.textInput.val()),
                 time: Date.now()
             }));
@@ -163,7 +307,7 @@ $(function () {
     });
 
     Backbone.sync = function(method, model) {
-        console.log(method + ': ' + JSON.stringify(model));
+//        console.log(method + ': ' + JSON.stringify(model));
     };
 
     var App = new AppView;
