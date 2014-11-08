@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#!-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 import json
 
@@ -7,15 +7,18 @@ import tornado.web
 import tornado.ioloop
 import sockjs.tornado
 
+from bson import json_util
+
 import pymongo
 
 
 class MainHandler(tornado.web.RequestHandler):
     def get(self, *args, **kwargs):
-        messages = sorted(list(db.chat.find().sort("$natural", -1).limit(20)), key=lambda message: message['time'])
+        messages = sorted(list(db.chat.find().sort("$natural", -1).limit(35)), key=lambda message: message['time'])
         for message in messages:
-            message['id'] = str(message["_id"])
-            del message["_id"]
+            if not 'id' in message.keys():
+                message['id'] = str(message["_id"])
+                del message['_id']
         self.render('index.html', messages=messages)
 
 
@@ -26,9 +29,9 @@ class WebSocket(sockjs.tornado.SockJSConnection):
         self.webSocketsPool.add(self)
 
     def on_message(self, message):
-        print(message)
         message_dict = json.loads(message)
         db.chat.insert(message_dict)
+        message = json.dumps(message_dict, default=json_util.default)
         self.broadcast(self.webSocketsPool, message)
 
     def on_close(self):
