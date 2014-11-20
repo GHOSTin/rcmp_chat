@@ -13,6 +13,8 @@ from bson.objectid import ObjectId
 
 import pymongo
 
+import config
+
 NEW_MESSAGE = 1
 USERS_LIST = 2
 NEW_USER = 3
@@ -116,7 +118,7 @@ if __name__ == '__main__':
         print("Error: " + str(e))
     http_client.close()
 
-    connection = pymongo.Connection('127.0.0.1', 27017)
+    connection = pymongo.Connection(config.mongo_host, config.mongo_post)
     db = connection.chat
 
     ChatRouter = sockjs.tornado.SockJSRouter(WebSocket, '/chat')
@@ -126,5 +128,5 @@ if __name__ == '__main__':
     ]
 
     app = tornado.web.Application(handlers + ChatRouter.urls)
-    app.listen(3000)
+    app.listen(config.app_port)
     tornado.ioloop.IOLoop.instance().start()
