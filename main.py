@@ -31,7 +31,7 @@ class MainHandler(tornado.web.RequestHandler):
         self.render('index.html', messages=self.load_messages())
 
     def load_messages(self, offset=0):
-        messages = sorted(list(db.chat.find().sort("$natural", -1).skip(offset).limit(50)), key=lambda message: message['time'])
+        messages = sorted(list(db.chat.find().sort("time", -1).skip(offset).limit(50)), key=lambda message: message['time'])
         for message in messages:
             message['_id'] = str(message["_id"])
         return json.dumps(messages)
