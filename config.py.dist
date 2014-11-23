@@ -1,0 +1,3 @@
+mongo_host = 'localhost'
+mongo_post = 27017
+app_port = 3000
