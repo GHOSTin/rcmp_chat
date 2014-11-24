@@ -228,7 +228,7 @@ $(function () {
         events: {
             'keydown .room-textarea': 'keyPressTextarea',
             'keyup .room-textarea': 'keyUpTextarea',
-            'click .help-con a': 'insertSmile',
+            'click .help-con a img': 'insertSmile',
             'click .main': 'closeUserList'
         },
 
