@@ -13,6 +13,6 @@
     "sockjs": "~0.3.4",
     "fontawesome": "~4.2.0",
     "jquery-hammerjs": "~2.0.0",
-    "emojify": "~0.9.5"
+    "twemoji": "~1.1.1"
   }
 }
