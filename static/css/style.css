@@ -14,7 +14,6 @@ input[type="text"] {
 }
 .wrapper {
   display: -webkit-box;
-  display: -moz-box;
   display: -ms-flexbox;
   display: -webkit-flex;
   display: flex;
@@ -50,8 +49,6 @@ input[type="text"] {
 }
 .toolbar-3-opp {
     width: calc(100% - 3px);
-    width: -webkit-calc(100% - 3px);
-    width: -moz-calc(100% - 3px);
     padding-right: 2px;
 }
 .chat-header {
@@ -81,7 +78,6 @@ input[type="text"] {
     position: absolute;
     right: 12px;
     top: 0;
-    background: -moz-linear-gradient(left,rgba(252,252,252,0) 0,#fcfcfc 100%);
     background: -webkit-gradient(linear,left top,right top,color-stop(0%,rgba(252,252,252,0)),color-stop(100%,#fcfcfc));
     background: -webkit-linear-gradient(left,rgba(252,252,252,0) 0,#fcfcfc 100%);
     background: -webkit-linear-gradient(left, rgba(252,252,252,0) 0, #fcfcfc 100%);
@@ -138,8 +134,6 @@ li.message  {
     word-wrap: break-word;
     position: relative;
     -webkit-transition: background-color 1s ease,border-color 1s ease;
-    -moz-transition: background-color 1s ease,border-color 1s ease;
-    -o-transition: background-color 1s ease,border-color 1s ease;
     transition: background-color 1s ease,border-color 1s ease;
 }
 li.message > * {
@@ -202,7 +196,6 @@ li.message > small {
     right: 0;
     top: 0;
     bottom: 0;
-    background: -moz-linear-gradient(left,rgba(236,236,236,0) 0,#ececec 100%);
     background: -webkit-gradient(linear,left top,right top,color-stop(0%,rgba(236,236,236,0)),color-stop(100%,#ececec));
     background: -webkit-linear-gradient(left,rgba(236,236,236,0) 0,#ececec 100%);
     background: -webkit-linear-gradient(left, rgba(236,236,236,0) 0, #ececec 100%);
@@ -226,8 +219,6 @@ li.message > small {
 .form-control {
     border-radius: 0;
     border: 2px solid #dedede;
-    -webkit-box-shadow: none!important;
-    -moz-box-shadow: none!important;
     box-shadow: none!important;
     margin: 10px auto!important;
     width: auto;
@@ -251,7 +242,8 @@ li.message > small {
     background: 0 0;
     border: none;
     opacity: .7;
-    transition: opacity 1s ease;
+    -webkit-transition: opacity 1s ease;
+            transition: opacity 1s ease;
 }
 .room-input .room-input-menu .btn:hover,
 .room-input .room-input-menu .btn:active {
@@ -268,7 +260,8 @@ li.message > small {
     padding: 6px 0;
 }
 .dropdown-menu-arrow {
-    transform: translate3d(0,0,0);
+    -webkit-transform: translate3d(0,0,0);
+            transform: translate3d(0,0,0);
 }
 .dropup .dropdown-menu-arrow::before {
     border-bottom: none;
