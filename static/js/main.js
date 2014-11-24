@@ -20,6 +20,43 @@ $(function () {
       }
     });
 
+    var parseTwemoji = function(selector){
+        selector = selector ? $(selector) : $('.room-textarea');
+        twemoji.parse(selector[0], {folder: 'svg', ext: '.svg'});
+    };
+
+    var pasteHtmlAtCaret = function(html) {
+        var sel, range;
+        if (window.getSelection) {
+            // IE9 and non-IE
+            sel = window.getSelection();
+            if (sel.getRangeAt && sel.rangeCount) {
+                range = sel.getRangeAt(0);
+                range.deleteContents();
+
+                var el = document.createElement("div");
+                el.innerHTML = html;
+                var frag = document.createDocumentFragment(), node, lastNode;
+                while ( (node = el.firstChild) ) {
+                    lastNode = frag.appendChild(node);
+                }
+                range.insertNode(frag);
+
+                // Preserve the selection
+                if (lastNode) {
+                    range = range.cloneRange();
+                    range.setStartAfter(lastNode);
+                    range.collapse(true);
+                    sel.removeAllRanges();
+                    sel.addRange(range);
+                }
+            }
+        } else if (document.selection && document.selection.type != "Control") {
+            // IE < 9
+            document.selection.createRange().pasteHTML(html);
+        }
+    };
+
     var AppView;
     var colors = ["rgb(204, 198, 21)", "rgb(204, 20, 137)", "rgb(21, 204, 198)",
         "rgb(21, 204, 106)", "rgb(204, 30, 20)", "rgb(20, 147, 201)", "rgb(206, 107, 22)",
@@ -49,7 +86,10 @@ $(function () {
                         var me = _.findWhere(msg.data.list, {id: msg.data.id});
                         if (!_.isUndefined(me)) {
                             MyUser.set(me);
-                            $('.room-textarea').prop('readonly', false).attr('placeholder', "").trigger('autosize.resizeIncludeStyle');
+                            $('.room-textarea').removeAttr('readonly').prop('contenteditable', "true").text("").focus();
+                            parseTwemoji('.help-con');
+                            $('.room-input-menu').removeClass('hidden');
+                            App.onTextAreaAutosize();
                         }
                         var _users = _.reject(msg.data.list, function (num) {
                             return _.isEqual(num, me)
@@ -73,7 +113,7 @@ $(function () {
                         App.isLoading = false;
                         break;
                     case 401:
-                        $('.room-textarea').prop('readonly', true).attr('placeholder', msg.data).trigger('autosize.resizeIncludeStyle');
+                        $('.room-textarea').attr('readonly');
                         break;
                 }
             };
@@ -126,6 +166,7 @@ $(function () {
 
         render: function () {
             this.$el.html(this.template(this.model.toJSON()));
+            parseTwemoji(this.$el);
             var modelUser = this.model.toJSON().user;
             if(!_.isEqual(modelUser, 'testUser')) {
                 this.$el.find('strong').text(modelUser.nickname);
@@ -186,18 +227,19 @@ $(function () {
 
         events: {
             'keydown .room-textarea': 'keyPressTextarea',
+            'keyup .room-textarea': 'keyUpTextarea',
+            'click .help-con a': 'insertSmile',
             'click .main': 'closeUserList'
         },
 
         initialize: function () {
             this.textInput = this.$('.room-textarea');
-            this.textInput.autosize({
-                append: "",
-                callback: this.onTextAreaAutosize
-            });
 
             $(window).on("resize", this.resizeTextareaMaxHeight);
             $('.infinite-scroll').on('scroll', this.checkScroll);
+            $('.room-input-menu').on('shown.bs.dropdown hidden.bs.dropdown', function () {
+              $('.room-textarea').focus();
+            });
 
             this.events = _.extend({}, this.defaultEvents, this.events||{});
 
@@ -213,6 +255,13 @@ $(function () {
 
             Messages.reset(preloadMessages);
             this.$el.hammer();
+            this.onTextAreaAutosize();
+        },
+
+        insertSmile: function(evt){
+            var text = '&nbsp;' + evt.target.alt + '&nbsp;';
+            if(!_.isUndefined(text))
+                pasteHtmlAtCaret(twemoji.parse(text, {folder: 'svg', ext: '.svg'}));
         },
 
         checkScroll: function() {
@@ -274,17 +323,6 @@ $(function () {
                 if( messageList[0].scrollHeight - messageList.height() - messageList.scrollTop() < 200)
                     this.$('.message').last()[0].scrollIntoView();
             }
-            emojify.setConfig({
-                img_dir          : 'static/lib/emojify/images/emoji',
-                ignored_tags     : {                // Ignore the following tags
-                    'SCRIPT'  : 1,
-                    'TEXTAREA': 1,
-                    'A'       : 1,
-                    'PRE'     : 1,
-                    'CODE'    : 1
-                }
-            });
-            emojify.run();
         },
 
         addAll: function () {
@@ -294,7 +332,9 @@ $(function () {
         createOnSubmit: function () {
             this.textInput.removeClass('error');
 
-            if (!this.textInput.val().trim()) {
+            this.textInput.find('img').replaceWith(function() { return this.alt; });
+
+            if (!this.textInput.text().trim()) {
                 this.textInput.addClass('error');
                 this.textInput.focus();
                 return false;
@@ -304,47 +344,53 @@ $(function () {
                type: 1,
                data: {
                    user: MyUser,
-                   text: _.escape(this.textInput.val()),
+                   text: _.escape(this.textInput[0].innerText),
                    time: Date.now()
                }
             }));
 
+            this.onTextAreaAutosize();
             return false;
         },
 
         keyPressTextarea: function (evt) {
+            var msg = this.textInput[0].innerHTML;
             if (13 === evt.keyCode || 10 === evt.keyCode) {
-                var msg = evt.target.value;
                 if (evt.ctrlKey || evt.shiftKey) {
-                    var start = evt.target.selectionStart;
-                    var end = evt.target.selectionEnd;
-                    this.textareaSetValue(msg.substr(0, start) + "\n" + msg.substr(end));
-                    evt.target.setSelectionRange(start + 1, start + 1);
+                    document.execCommand('insertHTML', false, '<br><br>');
+                    this.onTextAreaAutosize();
+                    return false;
                 } else {
                     if ($.trim(msg).length > 0) {
                         this.createOnSubmit();
                         this.textareaSetValue("");
                     }
                 }
+                this.onTextAreaAutosize();
                 return false;
             }
+            this.onTextAreaAutosize();
+        },
+
+        keyUpTextarea: function(e){
+            parseTwemoji();
         },
 
         textareaSetValue: function (val, selector) {
-            selector = selector ? $(selector) : $("textarea");
-            selector.val(val);
-            selector.trigger("autosize.resize");
+            selector = selector ? $(selector) : this.textInput;
+            selector.text(val);
         },
 
         onTextAreaAutosize: function (info) {
-            $('#chat-messages').css('padding-bottom', info.clientHeight + 28);
+            info = info ? info : this.textInput[0];
+            $('#chat-messages').css('padding-bottom', info.clientHeight + 18);
             $('#chat-messages').css('margin-bottom', -(info.clientHeight + 18));
         },
 
         resizeTextareaMaxHeight: function(){
             _.throttle(
                 $('.room-textarea')
-                    .css("max-height", Math.round(($(window).height() - 50) / 2 - 50)).trigger("autosize.resizeIncludeStyle")
+                    .css("max-height", Math.round(($(window).height() - 50) / 2 - 50))
                 ,100)
         }
 
