@@ -18,6 +18,7 @@
         <script src="static/lib/sockjs/sockjs.min.js"></script>
         <script src="static/lib/hammerjs/hammer.min.js"></script>
         <script src="static/lib/jquery-hammerjs/jquery.hammer.js"></script>
+        <script src="static/lib/twemoji/twemoji.min.js"></script>
         <script src="static/js/main.js"></script>
         <script>
             var preloadMessages = {% raw messages %};
@@ -34,9 +35,36 @@
                     <ul class="list-unstyled scrolled infinite-scroll"></ul>
                 </div>
                 <form name="chat-form form-inline" class="chat-pad" id="chat-form" action="." method="post">
-                    <div class="input-prepend input-append">
-                        <textarea rows="1" spellcheck="true" class="room-textarea scrolled form-control"
-                                  placeholder="Вы не авторизованы. Авторизация на сайте http://rcmp.me" style="overflow: hidden; word-wrap: break-word; resize: none; height: 34px; max-height: 427px;" readonly></textarea>
+                    <div class="room-input">
+                        <div class="room-input-menu btn-group dropup room-focus-effect-border hidden-sm hidden-xs hidden">
+                            <button type="button" data-toggle="dropdown" title="Smiles" style="height: 100%" class="btn btn-default dropdown-toggle">
+                                <i class="fa fa-smile-o fa-lg"></i>
+                            </button>
+                            <ul role="menu" class="pull-right dropdown-menu drop-up dropdown-menu-arrow">
+                                <li class="help-con">
+                                    <a>&#x1F600;</a><a>&#x1F601;</a><a>&#x1F602;</a><a>&#x1F603;</a>
+                                    <a>&#x1F604;</a><a>&#x1F605;</a><a>&#x1F606;</a><a>&#x1F607;</a>
+                                    <a>&#x1F608;</a><a>&#x1F609;</a><a>&#x1F60A;</a><a>&#x1F60B;</a>
+                                    <a>&#x1F60C;</a><a>&#x1F60D;</a><a>&#x1F60E;</a><a>&#x1F60F;</a>
+                                    <a>&#x1F610;</a><a>&#x1F611;</a><a>&#x1F612;</a><a>&#x1F613;</a>
+                                    <a>&#x1F614;</a><a>&#x1F615;</a><a>&#x1F616;</a><a>&#x1F617;</a>
+                                    <a>&#x1F618;</a><a>&#x1F619;</a><a>&#x1F61A;</a><a>&#x1F61B;</a>
+                                    <a>&#x1F61C;</a><a>&#x1F61D;</a><a>&#x1F61E;</a><a>&#x1F61F;</a>
+                                    <a>&#x1F620;</a><a>&#x1F621;</a><a>&#x1F622;</a><a>&#x1F623;</a>
+                                    <a>&#x1F624;</a><a>&#x1F625;</a><a>&#x1F626;</a><a>&#x1F627;</a>
+                                    <a>&#x1F628;</a><a>&#x1F629;</a><a>&#x1F62A;</a><a>&#x1F62B;</a>
+                                    <a>&#x1F62C;</a><a>&#x1F62D;</a><a>&#x1F62E;</a><a>&#x1F62F;</a>
+                                    <a>&#x1F630;</a><a>&#x1F631;</a><a>&#x1F632;</a><a>&#x1F633;</a>
+                                    <a>&#x1F634;</a><a>&#x1F635;</a><a>&#x1F636;</a><a>&#x1F637;</a>
+                                </li>
+                            </ul>
+                        </div>
+                        <div spellcheck="true" class="room-textarea scrolled form-control"
+                             style="overflow-y: auto; word-wrap: break-word; resize: none;
+                             min-height: 34px; max-height: 427px; height: auto;" readonly >
+                            Вы не можете писать сообщения, т.к. не авторизованы.<br>
+                            Пройдите по ссылке <a href="http://rcmp.me">rcmp.me</a>, чтобы авторизоваться или пройти регистрацию.
+                        </div>
                     </div>
                 </form>
             </article>
