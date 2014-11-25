@@ -28,7 +28,7 @@ allUsers = list()
 
 class MainHandler(tornado.web.RequestHandler):
     def get(self, *args, **kwargs):
-        self.render('index.html', messages=self.load_messages())
+        self.render('index.html', messages=self.load_messages(), metrics=config.metrics)
 
     def load_messages(self, offset=0):
         messages = sorted(list(db.chat.find().sort("time", -1).skip(offset).limit(50)), key=lambda message: message['time'])
