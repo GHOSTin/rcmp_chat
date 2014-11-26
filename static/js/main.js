@@ -260,8 +260,10 @@ $(function () {
 
         insertSmile: function(evt){
             var text = '&nbsp;' + evt.target.alt + '&nbsp;';
-            if(!_.isUndefined(text))
+            if(!_.isUndefined(text)) {
+                this.textInput.focus();
                 pasteHtmlAtCaret(twemoji.parse(text, {folder: 'svg', ext: '.svg'}));
+            }
         },
 
         checkScroll: function() {
@@ -344,7 +346,7 @@ $(function () {
                type: 1,
                data: {
                    user: MyUser,
-                   text: _.escape(this.textInput[0].innerText),
+                   text: _.escape($.trim(this.textInput[0].textContent || this.textInput[0].innerText)),
                    time: Date.now()
                }
             }));
